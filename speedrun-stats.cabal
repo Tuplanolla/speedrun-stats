@@ -1,7 +1,7 @@
-name:                speedrun-statistics
+name:                speedrun-stats
 version:             0.0.0
-synopsis:            Speedrun statistics
-description:         Extracting silly speedrun statistics from LiveSplit files.
+synopsis:            Silly speedrun statistics
+description:         Extracting silly speedrun statistics from various sources.
 license:             GPL-3
 license-file:        LICENSE
 author:              Sampsa Kiiskinen
@@ -17,4 +17,4 @@ executable arcus
                        time >=1.5 && <2.0,
                        xml >=1.3 && <2.0
   default-language:    Haskell2010
-  ghc-options:         -O3 -Wall
+  ghc-options:         -O3 -Wall -fno-warn-name-shadowing
