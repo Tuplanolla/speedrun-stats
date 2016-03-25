@@ -1,11 +1,10 @@
-arcus.png: arcus.gp data
+plot: arcus-distribution.png arcus-progress.png
+
+%.png: %.gp arcus-reset.data arcus-finished.data
 	gnuplot $<
 
-data: arcus.lss arcus.cabal
-	cabal run -v0 -- $< 1> reset.data 2> finished.data
-
-reset.data: arcus.lss arcus.cabal
+%-reset.data: %.lss speedrun-statistics.cabal
 	cabal run -v0 -- $< 1> $@ 2> /dev/null
 
-finished.data: arcus.lss arcus.cabal
+%-finished.data: %.lss speedrun-statistics.cabal
 	cabal run -v0 -- $< 1> /dev/null 2> $@

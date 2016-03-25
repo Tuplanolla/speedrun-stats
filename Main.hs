@@ -16,13 +16,17 @@ forMaybe = flip mapMaybe
 name :: String -> QName
 name str = blank_name {qName = str}
 
-data Uncertain a = a :+- a
-  deriving (Eq, Ord, Read, Show)
+formatNominalDiffTime :: NominalDiffTime -> String
+formatNominalDiffTime time = show (realToFrac time :: Double)
 
-data Run a =
-  Reset {at :: Uncertain a} |
-  Finished {at :: Uncertain a}
-  deriving (Eq, Ord, Read, Show)
+data Fate = Reset | Finished
+  deriving (Eq, Ord, Show)
+
+data Run = Run
+  {fate :: Fate,
+   date :: (UTCTime, NominalDiffTime),
+   time :: (NominalDiffTime, NominalDiffTime)}
+  deriving (Eq, Ord, Show)
 
 readId :: String -> Int
 readId = read
@@ -35,19 +39,24 @@ parseRealTime str = diffUTCTime <$>
   parseTimeM False defaultTimeLocale "%H:%M:%S%Q" str <*>
   parseTimeM False defaultTimeLocale "%s" "0"
 
-getRuns :: Element -> Maybe [Run NominalDiffTime]
+getRuns :: Element -> Maybe [Run]
 getRuns run = do
   history <- findChild (name "AttemptHistory") run
   let attempts = findChildren (name "Attempt") history
   return $ attempts `forMaybe` \ attempt -> do
+    start <- parseDateTime =<< findAttr (name "started") attempt
     case parseRealTime . strContent =<<
          findChild (name "RealTime") attempt of
       Nothing -> do
-        start <- parseDateTime =<< findAttr (name "started") attempt
         end <- parseDateTime =<< findAttr (name "ended") attempt
-        return Reset {at = diffUTCTime end start :+- realToFrac (sqrt 2 :: Double)}
-      Just realTime ->
-        return Finished {at = realTime :+- realToFrac (0.001 :: Double)}
+        return Run
+          {fate = Reset,
+           date = (start, realToFrac (1 :: Double)),
+           time = (diffUTCTime end start, realToFrac (sqrt 2 :: Double))}
+      Just realTime -> return Run
+        {fate = Finished,
+         date = (start, realToFrac (1 :: Double)),
+         time = (realTime, realToFrac (0.1 :: Double))}
 
 main :: IO ()
 main = do
@@ -57,11 +66,15 @@ main = do
     case getRuns =<< parseXMLDoc file of
       Just runs -> do
         runs `forM_` \ run ->
-          let showTime (value :+- uncertainty) =
-                show (realToFrac value :: Double) ++ " " ++
-                show (realToFrac uncertainty :: Double) in
+          let formatRow (date, dateError) (time, timeError) =
+                formatTime defaultTimeLocale "%s%Q" date ++ " " ++
+                formatNominalDiffTime dateError ++ " " ++
+                formatNominalDiffTime time ++ " " ++
+                formatNominalDiffTime timeError in
             case run of
-              Reset {at = time} -> hPutStrLn stdout (showTime time)
-              Finished {at = time} -> hPutStrLn stderr (showTime time)
+              Run {fate = Reset, date = date, time = time} ->
+                hPutStrLn stdout (formatRow date time)
+              Run {fate = Finished, date = date, time = time} ->
+                hPutStrLn stderr (formatRow date time)
         exitSuccess
       Nothing -> exitFailure
