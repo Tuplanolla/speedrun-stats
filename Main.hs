@@ -13,11 +13,11 @@ import Text.XML.Light
 forMaybe :: [a] -> (a -> Maybe b) -> [b]
 forMaybe = flip mapMaybe
 
-name :: String -> QName
-name str = blank_name {qName = str}
-
 formatNominalDiffTime :: NominalDiffTime -> String
 formatNominalDiffTime time = show (realToFrac time :: Double)
+
+name :: String -> QName
+name str = blank_name {qName = str}
 
 data Fate = Reset | Finished
   deriving (Eq, Ord, Show)

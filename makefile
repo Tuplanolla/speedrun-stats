@@ -1,4 +1,4 @@
-plot: arcus-distribution.png arcus-progress.png
+arcus: arcus-distribution.png arcus-progress.png
 
 %.png: %.gp arcus-reset.data arcus-finished.data
 	gnuplot $<
