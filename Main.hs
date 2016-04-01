@@ -68,8 +68,8 @@ main = do
         runs `forM_` \ run ->
           let formatRow (date, dateError) (time, timeError) =
                 formatTime defaultTimeLocale "%s%Q" date ++ " " ++
-                formatNominalDiffTime dateError ++ " " ++
                 formatNominalDiffTime time ++ " " ++
+                formatNominalDiffTime dateError ++ " " ++
                 formatNominalDiffTime timeError in
             case run of
               Run {fate = Reset, date = date, time = time} ->

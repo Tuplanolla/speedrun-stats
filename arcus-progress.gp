@@ -12,5 +12,5 @@ set format x '%Y-%m-%d'
 set format y '%M:%S'
 set xtics out
 set ytics out
-plot 'arcus-finished.data' using 1 : 3 \
+plot 'arcus-finished.data' using 1 : 2 \
      with points linetype 3 pointtype 7 notitle
